@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const User = require('../models/user');
+const jwtGenerator = require('../utils/jwtCreator');
 
 router.post('/register', async (req, res) => {
     try {
-        const {name, email, password } = req.body;
+        const { name, email, password } = req.body;
 
         const checkForEmail = await User.checkForExistingUser(email);
 
@@ -14,7 +15,10 @@ router.post('/register', async (req, res) => {
         const createNewUser = await User.createNewUser(name, email, password);
 
         if (createNewUser === 'New User Created.') {
-            res.status(201).send('User account successfully created');
+
+            const token = jwtGenerator(name, email);
+
+            res.status(201).json({token});
         } else {
             res.status(500).send('Error - failed to create new account');
         }        
