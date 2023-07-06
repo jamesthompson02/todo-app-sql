@@ -8,15 +8,15 @@ router.post('/register', async (req, res) => {
         const checkForEmail = await User.checkForExistingUser(email);
 
         if (checkForEmail) {
-            return res.status(409).send('This email is already linked to an account.')
+            res.status(409).send('This email is already linked to an account.')
         }
 
         const createNewUser = await User.createNewUser(name, email, password);
 
         if (createNewUser === 'New User Created.') {
-            return res.status(201).send('User account successfully created');
+            res.status(201).send('User account successfully created');
         } else {
-            return res.status(500).send('Error - failed to create new account');
+            res.status(500).send('Error - failed to create new account');
         }        
     } catch(err) {
         res.status(500).send(err.message);
