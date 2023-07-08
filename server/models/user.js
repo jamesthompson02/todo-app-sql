@@ -15,17 +15,28 @@ class User {
     static checkForExistingUser(email) {
         return new Promise(async (resolve, reject) => {
             try {
-                const checkForEmail = await pool.query('SELECT email FROM users WHERE email = $1;', [email]);
+                const checkForEmail = await pool.query('SELECT * FROM users WHERE email = $1;', [email]);
 
-                if (checkForEmail.rows.length) {
-                    resolve(1);
-                } else {
-                    resolve(0);
-                }
+                resolve(checkForEmail.rows);
+                
             } catch(err) {
                 reject(err.message);
             }
         })
+    }
+
+    static checkPassword(loginAttemptPassword, databasePassword) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const checkPassword = await bcrypt.compare(loginAttemptPassword, databasePassword);
+
+                resolve(checkPassword);
+                
+            } catch(err) {
+                reject(err.message);
+            }
+        })
+
     }
 
     static createNewUser(name, email, password) {

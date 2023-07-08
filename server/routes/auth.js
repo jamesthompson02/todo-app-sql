@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const pool = require('../db/init_db');
 const User = require('../models/user');
 const jwtGenerator = require('../utils/jwtCreator');
 
@@ -8,8 +9,8 @@ router.post('/register', async (req, res) => {
 
         const checkForEmail = await User.checkForExistingUser(email);
 
-        if (checkForEmail) {
-            res.status(409).send('This email is already linked to an account.')
+        if (checkForEmail.length) {
+            return res.status(409).send('This email is already linked to an account.')
         }
 
         const createNewUser = await User.createNewUser(name, email, password);
@@ -28,8 +29,31 @@ router.post('/register', async (req, res) => {
     
 })
 
-router.post('/login', (req, res) => {
-    res.send('Testing login')
+router.post('/login', async (req, res) => {
+
+    try {
+        const { email, password } = req.body;
+
+        const user = await User.checkForExistingUser(email);
+
+        if (!user.length) {
+            return res.status(401).send('Incorrect user credentials');
+        }
+
+        const checkedPassword = await User.checkPassword(password, user[0].user_password);
+
+        if (!checkedPassword) {
+            return res.status(401).send('Incorrect user credentials');
+        }
+
+        const token = jwtGenerator(user[0].name_of_user, email);
+
+        return res.status(200).json({ token });
+
+    } catch(err) {
+        res.status(500).send(err.message);
+
+    }
 })
 
 module.exports = router
