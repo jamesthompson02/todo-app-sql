@@ -1,9 +1,9 @@
 const router = require('express').Router();
-const pool = require('../db/init_db');
 const User = require('../models/user');
 const jwtGenerator = require('../utils/jwtCreator');
+const { validateCredentials } = require('../middleware/validSignUpInfo');
 
-router.post('/register', async (req, res) => {
+router.post('/register', validateCredentials, async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
