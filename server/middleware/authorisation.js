@@ -3,8 +3,8 @@ require('dotenv').config();
 
 const authoriseAccess = async (req, res, next) => {
     try {
-
-        const jwtToken = req.header('token');
+        const authHeader = req.headers['authorization'];
+        const jwtToken = authHeader.split(' ')[1];
 
         if (!jwtToken) {
             return res.status(403).send('Not authorised.')
