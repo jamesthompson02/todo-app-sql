@@ -1,11 +1,18 @@
 const express = require('express');
 const server = express();
 const cors = require('cors');
-const auth = require('./routes/auth');
+const authRouter = require('./routes/auth');
+const dashboardRouter = require('./routes/dashboard');
 
 server.use(cors());
 server.use(express.json());
-server.use('/', auth);
+
+// routes 
+server.use('/auth', authRouter);
+server.use('/dashboard', dashboardRouter);
+
+
+
 
 server.get('/', (req, res) => {
     res.send(`<h1>Server has been successfully served<h1>`);

@@ -1,9 +1,10 @@
-const router = require('express').Router();
+const authRouter = require('express').Router();
 const User = require('../models/user');
 const jwtGenerator = require('../utils/jwtCreator');
 const { validateCredentials } = require('../middleware/validSignUpInfo');
+const { authoriseAccess } = require('../middleware/authorisation');
 
-router.post('/register', validateCredentials, async (req, res) => {
+authRouter.post('/register', validateCredentials, async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
@@ -19,7 +20,7 @@ router.post('/register', validateCredentials, async (req, res) => {
 
             const token = jwtGenerator(name, email);
 
-            res.status(201).json({token});
+            res.status(201).json({name, email, token});
         } else {
             res.status(500).send('Error - failed to create new account');
         }        
@@ -29,7 +30,7 @@ router.post('/register', validateCredentials, async (req, res) => {
     
 })
 
-router.post('/login', async (req, res) => {
+authRouter.post('/login', async (req, res) => {
 
     try {
         const { email, password } = req.body;
@@ -48,7 +49,11 @@ router.post('/login', async (req, res) => {
 
         const token = jwtGenerator(user[0].name_of_user, email);
 
-        return res.status(200).json({ token });
+        return res.status(200).json({ 
+            name: user[0].name_of_user,
+            email,
+            token 
+        });
 
     } catch(err) {
         res.status(500).send(err.message);
@@ -56,4 +61,13 @@ router.post('/login', async (req, res) => {
     }
 })
 
-module.exports = router
+authRouter.get('/verification', authoriseAccess, async (req, res) => {
+    try {
+        res.json(true);
+
+    } catch(err) {
+        res.status(500).send(err.message);
+    }
+})
+
+module.exports = authRouter
