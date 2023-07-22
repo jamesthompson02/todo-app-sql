@@ -11,9 +11,6 @@ server.use(express.json());
 server.use('/auth', authRouter);
 server.use('/dashboard', dashboardRouter);
 
-
-
-
 server.get('/', (req, res) => {
     res.send(`<h1>Server has been successfully served<h1>`);
 })

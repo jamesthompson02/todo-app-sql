@@ -1,8 +1,11 @@
 const authRouter = require('express').Router();
 const User = require('../models/user');
-const jwtGenerator = require('../utils/jwtCreator');
+const accessJwtGenerator = require('../utils/accessJwtCreator');
 const { validateCredentials } = require('../middleware/validSignUpInfo');
 const { authoriseAccess } = require('../middleware/authorisation');
+const refreshJwtGenerator = require('../utils/refreshJwtGenerator');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 authRouter.post('/register', validateCredentials, async (req, res) => {
     try {
@@ -18,9 +21,19 @@ authRouter.post('/register', validateCredentials, async (req, res) => {
 
         if (createNewUser === 'New User Created.') {
 
-            const token = jwtGenerator(name, email);
+            const accessToken = accessJwtGenerator(name, email);
 
-            res.status(201).json({name, email, token});
+            const refreshToken = refreshJwtGenerator(name, email);
+
+            res.cookie('TODO_JWT_REFRESH_TOKEN', refreshToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                maxAge: 30 * 24 * 60 * 60 * 1000
+    
+            });
+
+            res.status(201).json({name, email, accessToken});
         } else {
             res.status(500).send('Error - failed to create new account');
         }        
@@ -47,17 +60,53 @@ authRouter.post('/login', async (req, res) => {
             return res.status(401).send('Incorrect user credentials');
         }
 
-        const token = jwtGenerator(user[0].name_of_user, email);
+        const accessToken = accessJwtGenerator(user[0].name_of_user, email);
+
+        const refreshToken = refreshJwtGenerator(user[0].name_of_user, email);
+
+        res.cookie('TODO_JWT_REFRESH_TOKEN', refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge: 30 * 24 * 60 * 60 * 1000
+
+        });
 
         return res.status(200).json({ 
             name: user[0].name_of_user,
             email,
-            token 
+            accessToken
         });
 
     } catch(err) {
         res.status(500).send(err.message);
 
+    }
+})
+
+authRouter.get('/refresh', (req, res) => {
+    try {
+        const cookies = req.cookies;
+
+        if (!cookies.TODO_JWT_REFRESH_TOKEN) {
+            return res.status(401).send("Unauthorized");
+        };
+
+        const refreshToken = cookies.TODO_JWT_REFRESH_TOKEN;
+
+        const { name, email } = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+        const checkForEmail = await User.checkForExistingUser(email);
+
+        if (!checkForEmail.length) {
+            return res.status(401).send("Unauthorized");
+        }
+
+        const accessToken = accessJwtGenerator(name, email);
+
+        return res.json({name, email, accessToken});
+    } catch(err) {
+        return res.status(500).send(err.message);
     }
 })
 
@@ -68,6 +117,21 @@ authRouter.get('/verification', authoriseAccess, async (req, res) => {
     } catch(err) {
         res.status(500).send(err.message);
     }
+})
+
+authRouter.post('/logout', (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies?.TODO_JWT_REFRESH_TOKEN) {
+        return res.status(204).send('No content');
+    }
+    res.clearCookie('TODO_JWT_REFRESH_TOKEN', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+
+    });
+    res.json({message: 'Cookie cleared'});
 })
 
 module.exports = authRouter
