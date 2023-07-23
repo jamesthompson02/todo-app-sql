@@ -27,8 +27,9 @@ authRouter.post('/register', validateCredentials, async (req, res) => {
 
             res.cookie('TODO_JWT_REFRESH_TOKEN', refreshToken, {
                 httpOnly: true,
-                secure: true,
-                sameSite: 'none',
+                // secure: true,
+                // Note that secure key is vital when app is deployed but problematic for localhost dev purposes.
+                sameSite: 'strict',
                 maxAge: 30 * 24 * 60 * 60 * 1000
     
             });
@@ -66,8 +67,9 @@ authRouter.post('/login', async (req, res) => {
 
         res.cookie('TODO_JWT_REFRESH_TOKEN', refreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            // secure: true,
+            // Note that secure key is vital when app is deployed but problematic for localhost dev purposes.
+            sameSite: 'strict',
             maxAge: 30 * 24 * 60 * 60 * 1000
 
         });
@@ -126,8 +128,9 @@ authRouter.post('/logout', (req, res) => {
     }
     res.clearCookie('TODO_JWT_REFRESH_TOKEN', {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        // secure: true,
+        // Note that secure key is vital when app is deployed but problematic for localhost dev purposes.
+        sameSite: 'strict',
         maxAge: 30 * 24 * 60 * 60 * 1000
 
     });
