@@ -86,7 +86,7 @@ authRouter.post('/login', async (req, res) => {
     }
 })
 
-authRouter.get('/refresh', (req, res) => {
+authRouter.get('/refresh', async (req, res) => {
     try {
         const cookies = req.cookies;
 
