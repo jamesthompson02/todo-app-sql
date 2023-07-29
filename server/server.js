@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const server = express();
 const cors = require('cors');
 const authRouter = require('./routes/auth');
@@ -8,6 +9,7 @@ const userAccountRouter = require('./routes/userAccountActions');
 
 server.use(cors());
 server.use(express.json());
+server.use(cookieParser());
 
 // routes 
 server.use('/auth', authRouter);

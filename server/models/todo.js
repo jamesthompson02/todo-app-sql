@@ -31,7 +31,7 @@ class Todo {
             try {
                 const createTodo = await pool.query('INSERT INTO todos (todo_title, todo_description, todo_creation_date, todo_deadline_date, todo_deadline_time, user_id) VALUES ($1, $2, $3, $4, $5, $6);', [todoTitle, todoDescription, new Date().toISOString(), todoDeadlineDate, todoDeadlineTime, email]);
                 
-                resolve(createTodo);
+                resolve('Todo created.');
 
             } catch(err) {
                 reject(err.message);
@@ -44,7 +44,7 @@ class Todo {
             try {
                 const updateTodo = await pool.query('Update todos SET todo_title = $1, todo_description = $2, todo_deadline_date = $3, todo_deadline_time = $4 WHERE todo_id = $5;', [todoTitle, todoDescription, todoDeadlineDate, todoDeadlineTime, id]);
                 
-                resolve(updateTodo);
+                resolve('Todo updated.');
 
             } catch(err) {
                 reject(err.message);
@@ -58,7 +58,7 @@ class Todo {
             try {           
                 const deleteTodo = await pool.query('DELETE FROM todos WHERE todo_id = $1;', [id]);
                 
-                resolve(deleteTodo.rows);
+                resolve('Todo deleted.');
 
             } catch(err) {
                 reject(err.message);
